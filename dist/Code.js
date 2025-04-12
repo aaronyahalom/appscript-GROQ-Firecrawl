@@ -29,79 +29,70 @@ const OPENAI_API_KEY = "";
 /** Private user properties storage keys. This is not the API Key itself. */
 const PROPERTY_KEY_OPENAPI = "OPENAI_API_KEY";
 const MIME_JSON = "application/json";
-function REQUEST_COMPLETIONS(
-  apiKey,
-  promptSystem,
-  prompt,
-  model,
-  maxTokens,
-  temperature,
-) {
-  // Prepare user prompt
-  const promptCleaned = STRING_CLEAN(prompt);
-  if (promptCleaned === "") {
+function REQUEST_COMPLETIONS(apiKey, promptSystem, prompt, model, maxTokens, temperature) {
+    // Prepare user prompt
+    const promptCleaned = STRING_CLEAN(prompt);
+    if (promptCleaned === "") {
+        return EMPTY;
+    }
+    // Prepare system prompt
+    const promptSystemCleaned = STRING_CLEAN(promptSystem);
+    // Create cache key
+    const cache = GET_CACHE();
+    const cacheKey = HASH_SHA1(promptCleaned, model, maxTokens, temperature);
+    // Check cache
+    if (DEFAULT_CACHE_DURATION) {
+        const cachedResponse = cache.get(cacheKey);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+    }
+    // Compose messages.
+    const messages = [];
+    if (promptSystemCleaned) {
+        messages.push({ role: "system", content: promptSystemCleaned });
+    }
+    messages.push({ role: "user", content: promptCleaned });
+    /**
+     * Unique user ID for the current user (rotates every 30 days).
+     * https://developers.google.com/apps-script/reference/base/session?hl#getTemporaryActiveUserKey()
+     */
+    const user_id = Session.getTemporaryActiveUserKey();
+    const payload = {
+        stream: false,
+        model: model,
+        max_tokens: maxTokens,
+        messages: messages,
+        temperature: temperature,
+        service_tier: "auto", // Handle rate limits automatically.
+        n: 1, // Number of completions to generate.
+        user: user_id, // User ID to associate with the conversation and let OpenAI handle abusers.
+        seed: DEFAULT_SEED,
+    };
+    const options = {
+        method: "post",
+        contentType: MIME_JSON,
+        headers: {
+            Accept: MIME_JSON,
+            Authorization: `Bearer ${apiKey}`,
+        },
+        payload: JSON.stringify(payload),
+    };
+    const response = UrlFetchApp.fetch("https://api.openai.com/v1/chat/completions", options);
+    const json = response.getContentText();
+    const data = JSON.parse(json);
+    const choice = data["choices"][0];
+    if (choice) {
+        const content = (choice["message"]["content"] || "").trim();
+        if (content && DEFAULT_CACHE_DURATION === -1) {
+            cache.put(cacheKey, content, Number.POSITIVE_INFINITY);
+        }
+        else if (content && DEFAULT_CACHE_DURATION) {
+            cache.put(cacheKey, content, DEFAULT_CACHE_DURATION);
+        }
+        return content || EMPTY;
+    }
     return EMPTY;
-  }
-  // Prepare system prompt
-  const promptSystemCleaned = STRING_CLEAN(promptSystem);
-  // Create cache key
-  const cache = GET_CACHE();
-  const cacheKey = HASH_SHA1(promptCleaned, model, maxTokens, temperature);
-  // Check cache
-  if (DEFAULT_CACHE_DURATION) {
-    const cachedResponse = cache.get(cacheKey);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-  }
-  // Compose messages.
-  const messages = [];
-  if (promptSystemCleaned) {
-    messages.push({ role: "system", content: promptSystemCleaned });
-  }
-  messages.push({ role: "user", content: promptCleaned });
-  /**
-   * Unique user ID for the current user (rotates every 30 days).
-   * https://developers.google.com/apps-script/reference/base/session?hl#getTemporaryActiveUserKey()
-   */
-  const user_id = Session.getTemporaryActiveUserKey();
-  const payload = {
-    stream: false,
-    model: model,
-    max_tokens: maxTokens,
-    messages: messages,
-    temperature: temperature,
-    service_tier: "auto", // Handle rate limits automatically.
-    n: 1, // Number of completions to generate.
-    user: user_id, // User ID to associate with the conversation and let OpenAI handle abusers.
-    seed: DEFAULT_SEED,
-  };
-  const options = {
-    method: "post",
-    contentType: MIME_JSON,
-    headers: {
-      Accept: MIME_JSON,
-      Authorization: `Bearer ${apiKey}`,
-    },
-    payload: JSON.stringify(payload),
-  };
-  const response = UrlFetchApp.fetch(
-    "https://api.openai.com/v1/chat/completions",
-    options,
-  );
-  const json = response.getContentText();
-  const data = JSON.parse(json);
-  const choice = data["choices"][0];
-  if (choice) {
-    const content = (choice["message"]["content"] || "").trim();
-    if (content && DEFAULT_CACHE_DURATION === -1) {
-      cache.put(cacheKey, content, Number.POSITIVE_INFINITY);
-    } else if (content && DEFAULT_CACHE_DURATION) {
-      cache.put(cacheKey, content, DEFAULT_CACHE_DURATION);
-    }
-    return content || EMPTY;
-  }
-  return EMPTY;
 }
 /**
  * Custom function to call ChatGPT API.
@@ -114,35 +105,16 @@ function REQUEST_COMPLETIONS(
  * @return {string|Array<Array<string>>} The response from ChatGPT.
  * @customfunction
  */
-function CHATGPT(
-  prompt,
-  model = "gpt-4o-mini",
-  maxTokens = DEFAULT_MAX_TOKENS,
-  temperature = DEFAULT_TEMPERATURE,
-) {
-  const apiKey = PROPERTY_API_KEY_GET();
-  if (Array.isArray(prompt)) {
-    return prompt.map((row) => {
-      return row.map((cell) => {
-        return REQUEST_COMPLETIONS(
-          apiKey,
-          SYSTEM_PROMPT,
-          cell,
-          model,
-          maxTokens,
-          temperature,
-        );
-      });
-    });
-  }
-  return REQUEST_COMPLETIONS(
-    apiKey,
-    SYSTEM_PROMPT,
-    prompt,
-    model,
-    maxTokens,
-    temperature,
-  );
+function CHATGPT(prompt, model = "gpt-4o-mini", maxTokens = DEFAULT_MAX_TOKENS, temperature = DEFAULT_TEMPERATURE) {
+    const apiKey = PROPERTY_API_KEY_GET();
+    if (Array.isArray(prompt)) {
+        return prompt.map((row) => {
+            return row.map((cell) => {
+                return REQUEST_COMPLETIONS(apiKey, SYSTEM_PROMPT, cell, model, maxTokens, temperature);
+            });
+        });
+    }
+    return REQUEST_COMPLETIONS(apiKey, SYSTEM_PROMPT, prompt, model, maxTokens, temperature);
 }
 /**
  * Custom function to call ChatGPT-3 API. This is the default and most cost-effective model.
@@ -154,12 +126,8 @@ function CHATGPT(
  * @return {string|Array<Array<string>>} The response from ChatGPT
  * @customfunction
  */
-function CHATGPT3(
-  prompt,
-  maxTokens = DEFAULT_MAX_TOKENS,
-  temperature = DEFAULT_TEMPERATURE,
-) {
-  return CHATGPT(prompt, "gpt-3.5-turbo", maxTokens, temperature);
+function CHATGPT3(prompt, maxTokens = DEFAULT_MAX_TOKENS, temperature = DEFAULT_TEMPERATURE) {
+    return CHATGPT(prompt, "gpt-3.5-turbo", maxTokens, temperature);
 }
 /**
  * Custom function to call ChatGPT-4 API. This is the latest and most powerful model.
@@ -171,12 +139,8 @@ function CHATGPT3(
  * @return {string|Array<Array<string>>} The response from ChatGPT
  * @customfunction
  */
-function CHATGPT4(
-  prompt,
-  maxTokens = DEFAULT_MAX_TOKENS,
-  temperature = DEFAULT_TEMPERATURE,
-) {
-  return CHATGPT(prompt, "gpt-4o", maxTokens, temperature);
+function CHATGPT4(prompt, maxTokens = DEFAULT_MAX_TOKENS, temperature = DEFAULT_TEMPERATURE) {
+    return CHATGPT(prompt, "gpt-4o", maxTokens, temperature);
 }
 /**
  * Custom function to set the OpenAI API key. Get yours at: https://platform.openai.com/api-keys
@@ -186,28 +150,25 @@ function CHATGPT4(
  * @customfunction
  */
 function CHATGPTKEY(apiKey) {
-  PROPERTY_API_KEY_SET(apiKey);
-  if (!apiKey) {
-    return "🚮 API Key removed from user settings.";
-  }
-  const options = {
-    method: "get",
-    contentType: MIME_JSON,
-    headers: {
-      Accept: MIME_JSON,
-      Authorization: `Bearer ${apiKey}`,
-    },
-  };
-  const response = UrlFetchApp.fetch(
-    "https://api.openai.com/v1/models",
-    options,
-  );
-  const json = response.getContentText();
-  const data = JSON.parse(json);
-  if (!Array.isArray(data["data"]) || data["data"].length === 0) {
-    return "❌ API Key is invalid or failed to connect.";
-  }
-  return "✅ API Key saved successfully.";
+    PROPERTY_API_KEY_SET(apiKey);
+    if (!apiKey) {
+        return "🚮 API Key removed from user settings.";
+    }
+    const options = {
+        method: "get",
+        contentType: MIME_JSON,
+        headers: {
+            Accept: MIME_JSON,
+            Authorization: `Bearer ${apiKey}`,
+        },
+    };
+    const response = UrlFetchApp.fetch("https://api.openai.com/v1/models", options);
+    const json = response.getContentText();
+    const data = JSON.parse(json);
+    if (!Array.isArray(data["data"]) || data["data"].length === 0) {
+        return "❌ API Key is invalid or failed to connect.";
+    }
+    return "✅ API Key saved successfully.";
 }
 /**
  * Custom function to see available models from OpenAI.
@@ -216,73 +177,67 @@ function CHATGPTKEY(apiKey) {
  * @customfunction
  */
 function CHATGPTMODELS() {
-  const apiKey = PROPERTY_API_KEY_GET();
-  const options = {
-    method: "get",
-    contentType: MIME_JSON,
-    headers: {
-      Accept: MIME_JSON,
-      Authorization: `Bearer ${apiKey}`,
-    },
-  };
-  const response = UrlFetchApp.fetch(
-    "https://api.openai.com/v1/models",
-    options,
-  );
-  const json = response.getContentText();
-  const data = JSON.parse(json);
-  if (!Array.isArray(data["data"]) || data["data"].length === 0) {
-    return [["🌵 No models available"]];
-  }
-  return data["data"].map((model) => {
-    return [model["id"]];
-  });
+    const apiKey = PROPERTY_API_KEY_GET();
+    const options = {
+        method: "get",
+        contentType: MIME_JSON,
+        headers: {
+            Accept: MIME_JSON,
+            Authorization: `Bearer ${apiKey}`,
+        },
+    };
+    const response = UrlFetchApp.fetch("https://api.openai.com/v1/models", options);
+    const json = response.getContentText();
+    const data = JSON.parse(json);
+    if (!Array.isArray(data["data"]) || data["data"].length === 0) {
+        return [["🌵 No models available"]];
+    }
+    return data["data"].map((model) => {
+        return [model["id"]];
+    });
 }
 function PROPERTY_API_KEY_SET(apiKey) {
-  const properties = PropertiesService.getUserProperties();
-  if (apiKey === null || apiKey === undefined) {
-    properties.deleteProperty(PROPERTY_KEY_OPENAPI);
-  } else {
-    properties.setProperty(PROPERTY_KEY_OPENAPI, apiKey);
-  }
+    const properties = PropertiesService.getUserProperties();
+    if (apiKey === null || apiKey === undefined) {
+        properties.deleteProperty(PROPERTY_KEY_OPENAPI);
+    }
+    else {
+        properties.setProperty(PROPERTY_KEY_OPENAPI, apiKey);
+    }
 }
 function PROPERTY_API_KEY_GET() {
-  const properties = PropertiesService.getUserProperties();
-  const apiKey = properties.getProperty(PROPERTY_KEY_OPENAPI) || OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      'Use =CHATGPTKEY("YOUR_API_KEY") first. Get it from https://platform.openai.com/api-keys',
-    );
-  }
-  return apiKey;
+    const properties = PropertiesService.getUserProperties();
+    const apiKey = properties.getProperty(PROPERTY_KEY_OPENAPI) || OPENAI_API_KEY;
+    if (!apiKey) {
+        throw new Error('Use =CHATGPTKEY("YOUR_API_KEY") first. Get it from https://platform.openai.com/api-keys');
+    }
+    return apiKey;
 }
 function STRING_CLEAN(value) {
-  if (value === undefined || value === null) {
-    return "";
-  }
-  if (typeof value === "number") {
-    return value.toString();
-  }
-  return String(value).trim();
+    if (value === undefined || value === null) {
+        return "";
+    }
+    if (typeof value === "number") {
+        return value.toString();
+    }
+    return String(value).trim();
 }
 function HASH(algorithm, ...args) {
-  const input = args.join("");
-  const hash = Utilities.computeDigest(algorithm, input)
-    .map((byte) => {
-      const v = (byte & 0xff).toString(16);
-      return v.length === 1 ? `0${v}` : v;
+    const input = args.join("");
+    const hash = Utilities.computeDigest(algorithm, input)
+        .map((byte) => {
+        const v = (byte & 0xff).toString(16);
+        return v.length === 1 ? `0${v}` : v;
     })
-    .join("");
-  return hash;
+        .join("");
+    return hash;
 }
 function HASH_SHA1(...args) {
-  return HASH(Utilities.DigestAlgorithm.SHA_1, ...args);
+    return HASH(Utilities.DigestAlgorithm.SHA_1, ...args);
 }
 function GET_CACHE() {
-  // TODO: not sure which one is the best cache to use.
-  return (
-    CacheService.getDocumentCache() ||
-    CacheService.getScriptCache() ||
-    CacheService.getUserCache()
-  );
+    // TODO: not sure which one is the best cache to use.
+    return (CacheService.getDocumentCache() ||
+        CacheService.getScriptCache() ||
+        CacheService.getUserCache());
 }
