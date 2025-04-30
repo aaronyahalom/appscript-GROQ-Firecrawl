@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      color: #333;
+    }
+    .formula {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+    .formula h3 {
+      margin-top: 0;
+      color: #1a73e8;
+      word-wrap: break-word;
+    }
+    .example {
+      background-color: #f8f9fa;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      margin: 5px 0;
+    }
+    .defaults {
+      color: #666;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <h2>Available OpenAI Formulas</h2>
+
+  <div class="formula">
+    <h3>=CHATGPT(prompt, [model], [maxTokens], [temperature])</h3>
+    <p>Main function for ChatGPT API calls.</p>
+    <div class="example">=CHATGPT("What is the capital of " & A1 & "?")</div>
+    <div class="defaults">
+      Defaults:
+      <ul>
+        <li>model: "gpt-4o-mini"</li>
+        <li>maxTokens: 150</li>
+        <li>temperature: 0.0</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="formula">
+    <h3>=CHATGPT3(prompt, [maxTokens], [temperature])</h3>
+    <p>Uses GPT-3.5-turbo model (most cost-effective).</p>
+    <div class="example">=CHATGPT3("Summarize: " & A1)</div>
+    <div class="defaults">
+      Defaults:
+      <ul>
+        <li>maxTokens: 150</li>
+        <li>temperature: 0.0</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="formula">
+    <h3>=CHATGPT4(prompt, [maxTokens], [temperature])</h3>
+    <p>Uses GPT-4 model (most powerful).</p>
+    <div class="example">=CHATGPT4("Analyze: " & A1)</div>
+    <div class="defaults">
+      Defaults:
+      <ul>
+        <li>maxTokens: 150</li>
+        <li>temperature: 0.0</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="formula">
+    <h3>=OPENAIKEY(apiKey)</h3>
+    <p>Sets your OpenAI API key.</p>
+    <div class="example">=OPENAIKEY("your-api-key-here")</div>
+  </div>
+
+  <div class="formula">
+    <h3>=CHATGPTSYSTEMPROMPT(prompt)</h3>
+    <p>Sets the system prompt for all future calls.</p>
+    <div class="example">=CHATGPTSYSTEMPROMPT("You are a financial advisor.")</div>
+  </div>
+
+  <div class="formula">
+    <h3>=OPENAIMODELS()</h3>
+    <p>Lists all available OpenAI models.</p>
+    <div class="example">=OPENAIMODELS()</div>
+  </div>
+</body>
+</html>

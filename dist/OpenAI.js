@@ -1,15 +1,14 @@
 /**********************************************
- * @author Patricio López Juri <https://www.linkedin.com/in/lopezjuri/>
+ * @author Regan McGregor <https://www.linkedin.com/in/regan-mcgregor/>
  * @license MIT
- * @version 1.2.1
- * @see {@link https://github.com/urvana/appscript-chatgpt}
+ * @version 1.0.0
+ * @description Google Apps Script for OpenAI API integration in Google Sheets.
+ * @see {@link https://github.com/reganmcgregor/appscript-llm}
  */
 /** You can change this. */
-const SYSTEM_PROMPT = `
-  You are a helpful assistant integrated within a Google Sheets application.
+const SYSTEM_PROMPT = `You are a helpful assistant integrated within a Google Sheets application.
   Your task is to provide accurate, concise, and user-friendly responses to user prompts.
-  Explanation is not needed, just provide the best answer you can.
-`;
+  Explanation is not needed, just provide the best answer you can.`;
 /** Prefer short answers. ChatGPT web default is 4096 */
 const DEFAULT_MAX_TOKENS = 150;
 /** Prefer deterministic and less creative answers. ChatGPT web default is 0.7 */
@@ -28,24 +27,43 @@ const EMPTY = "EMPTY";
 const OPENAI_API_KEY = "";
 /** Private user properties storage keys. This is not the API Key itself. */
 const PROPERTY_KEY_OPENAPI = "OPENAI_API_KEY";
+const PROPERTY_KEY_SYSTEM_PROMPT = "SYSTEM_PROMPT";
+const PROPERTY_KEY_MAX_TOKENS = "DEFAULT_MAX_TOKENS";
+const PROPERTY_KEY_TEMPERATURE = "DEFAULT_TEMPERATURE";
+const PROPERTY_KEY_CACHE_DURATION = "DEFAULT_CACHE_DURATION";
 const MIME_JSON = "application/json";
 function REQUEST_COMPLETIONS(apiKey, promptSystem, prompt, model, maxTokens, temperature) {
+    var _a, _b;
     // Prepare user prompt
     const promptCleaned = STRING_CLEAN(prompt);
     if (promptCleaned === "") {
         return EMPTY;
     }
-    // Prepare system prompt
+    // Use the provided system prompt directly since priority is already handled
     const promptSystemCleaned = STRING_CLEAN(promptSystem);
+    console.log('Using System Prompt:', promptSystemCleaned);
     // Create cache key
     const cache = GET_CACHE();
     const cacheKey = HASH_SHA1(promptCleaned, model, maxTokens, temperature);
-    // Check cache
-    if (DEFAULT_CACHE_DURATION) {
+    // Get current cache duration from properties
+    const properties = PropertiesService.getUserProperties();
+    const currentCacheDuration = PROPERTY_GET_NUMBER(properties, PROPERTY_KEY_CACHE_DURATION, DEFAULT_CACHE_DURATION || 0);
+    // Clear existing cache if duration is 0
+    if (currentCacheDuration === 0) {
+        cache.remove(cacheKey);
+    }
+    // Only check cache if duration is positive
+    if (currentCacheDuration > 0) {
         const cachedResponse = cache.get(cacheKey);
         if (cachedResponse) {
+            console.log('Using cached response');
             return cachedResponse;
         }
+    }
+    console.log('Making new API request');
+    console.log('User Prompt:', promptCleaned);
+    if (promptSystemCleaned) {
+        console.log('System Prompt:', promptSystemCleaned);
     }
     // Compose messages.
     const messages = [];
@@ -55,7 +73,7 @@ function REQUEST_COMPLETIONS(apiKey, promptSystem, prompt, model, maxTokens, tem
     messages.push({ role: "user", content: promptCleaned });
     /**
      * Unique user ID for the current user (rotates every 30 days).
-     * https://developers.google.com/apps-script/reference/base/session?hl#getTemporaryActiveUserKey()
+     * https://developers.google.com/apps-script/reference/base/session?hl=gettemporaryactiveuserkey()
      */
     const user_id = Session.getTemporaryActiveUserKey();
     const payload = {
@@ -81,14 +99,26 @@ function REQUEST_COMPLETIONS(apiKey, promptSystem, prompt, model, maxTokens, tem
     const response = UrlFetchApp.fetch("https://api.openai.com/v1/chat/completions", options);
     const json = response.getContentText();
     const data = JSON.parse(json);
+    // Log the API response
+    const responseContent = (_b = (_a = data["choices"][0]) === null || _a === void 0 ? void 0 : _a["message"]) === null || _b === void 0 ? void 0 : _b["content"];
+    console.log('API Response:', responseContent || 'No content');
+    // Update caching logic in the response handling
     const choice = data["choices"][0];
     if (choice) {
         const content = (choice["message"]["content"] || "").trim();
-        if (content && DEFAULT_CACHE_DURATION === -1) {
-            cache.put(cacheKey, content, Number.POSITIVE_INFINITY);
-        }
-        else if (content && DEFAULT_CACHE_DURATION) {
-            cache.put(cacheKey, content, DEFAULT_CACHE_DURATION);
+        if (content) {
+            // Only cache if duration is not 0
+            if (currentCacheDuration === -1) {
+                console.log('Caching response indefinitely');
+                cache.put(cacheKey, content, Number.POSITIVE_INFINITY);
+            }
+            else if (currentCacheDuration > 0) {
+                console.log('Caching response for', currentCacheDuration, 'seconds');
+                cache.put(cacheKey, content, currentCacheDuration);
+            }
+            else {
+                console.log('Not caching response (cache duration is 0)');
+            }
         }
         return content || EMPTY;
     }
@@ -107,14 +137,17 @@ function REQUEST_COMPLETIONS(apiKey, promptSystem, prompt, model, maxTokens, tem
  */
 function CHATGPT(prompt, model = "gpt-4o-mini", maxTokens = DEFAULT_MAX_TOKENS, temperature = DEFAULT_TEMPERATURE) {
     const apiKey = PROPERTY_API_KEY_GET();
+    const systemPrompt = PROPERTY_SYSTEM_PROMPT_GET(); // Get system prompt with proper priority
     if (Array.isArray(prompt)) {
         return prompt.map((row) => {
             return row.map((cell) => {
-                return REQUEST_COMPLETIONS(apiKey, SYSTEM_PROMPT, cell, model, maxTokens, temperature);
+                return REQUEST_COMPLETIONS(apiKey, systemPrompt, // Pass the prioritized system prompt
+                cell, model, maxTokens, temperature);
             });
         });
     }
-    return REQUEST_COMPLETIONS(apiKey, SYSTEM_PROMPT, prompt, model, maxTokens, temperature);
+    return REQUEST_COMPLETIONS(apiKey, systemPrompt, // Pass the prioritized system prompt
+    prompt, model, maxTokens, temperature);
 }
 /**
  * Custom function to call ChatGPT-3 API. This is the default and most cost-effective model.
@@ -149,7 +182,7 @@ function CHATGPT4(prompt, maxTokens = DEFAULT_MAX_TOKENS, temperature = DEFAULT_
  * @return {string} Confirmation message
  * @customfunction
  */
-function CHATGPTKEY(apiKey) {
+function OPENAIKEY(apiKey) {
     PROPERTY_API_KEY_SET(apiKey);
     if (!apiKey) {
         return "🚮 API Key removed from user settings.";
@@ -171,12 +204,27 @@ function CHATGPTKEY(apiKey) {
     return "✅ API Key saved successfully.";
 }
 /**
+ * Custom function to set the system prompt.
+ * Example: =CHATGPTSYSTEMPROMPT("You are a financial assistant.")
+ *
+ * @param {string} prompt The system prompt to save
+ * @return {string} Confirmation message
+ * @customfunction
+ */
+function CHATGPTSYSTEMPROMPT(prompt) {
+    PROPERTY_SYSTEM_PROMPT_SET(prompt);
+    if (!prompt) {
+        return "🚮 System prompt removed from user settings.";
+    }
+    return "✅ System prompt saved successfully.";
+}
+/**
  * Custom function to see available models from OpenAI.
- * Example: =CHATGPTMODELS()
+ * Example: =OPENAIMODELS()
  * @return {Array<Array<string>>} The list of available models
  * @customfunction
  */
-function CHATGPTMODELS() {
+function OPENAIMODELS() {
     const apiKey = PROPERTY_API_KEY_GET();
     const options = {
         method: "get",
@@ -196,6 +244,74 @@ function CHATGPTMODELS() {
         return [model["id"]];
     });
 }
+/**
+ * Shows a sidebar in the Google Sheets UI with environment variable settings.
+ * This function creates a custom UI element that lets users configure API settings.
+ */
+function showSettingsSidebar() {
+    const html = HtmlService.createHtmlOutputFromFile('OpenAI-Settings')
+        .setTitle('OpenAI Settings')
+        .setWidth(400);
+    SpreadsheetApp.getUi().showSidebar(html);
+}
+function showFormulaSidebar() {
+    const html = HtmlService.createHtmlOutputFromFile('OpenAI-Formulas')
+        .setTitle('OpenAI Formulas')
+        .setWidth(400);
+    SpreadsheetApp.getUi().showSidebar(html);
+}
+/**
+ * Updates the environment variables with values from the settings form.
+ * This function is called from the sidebar UI.
+ */
+function updateSettings(settings) {
+    const properties = PropertiesService.getUserProperties();
+    properties.setProperties({
+        [PROPERTY_KEY_SYSTEM_PROMPT]: settings.systemPrompt,
+        [PROPERTY_KEY_MAX_TOKENS]: settings.maxTokens.toString(),
+        [PROPERTY_KEY_TEMPERATURE]: settings.temperature.toString(),
+        [PROPERTY_KEY_CACHE_DURATION]: settings.cacheDuration.toString(),
+        [PROPERTY_KEY_OPENAPI]: settings.apiKey,
+    });
+    return { status: 'success', message: 'Settings updated successfully' };
+}
+/**
+ * Gets the current environment variable settings.
+ * This function is called from the sidebar UI.
+ */
+function getSettings() {
+    const properties = PropertiesService.getUserProperties();
+    return {
+        systemPrompt: properties.getProperty(PROPERTY_KEY_SYSTEM_PROMPT) || SYSTEM_PROMPT,
+        maxTokens: PROPERTY_GET_NUMBER(properties, PROPERTY_KEY_MAX_TOKENS, DEFAULT_MAX_TOKENS),
+        temperature: PROPERTY_GET_NUMBER(properties, PROPERTY_KEY_TEMPERATURE, DEFAULT_TEMPERATURE),
+        cacheDuration: PROPERTY_GET_NUMBER(properties, PROPERTY_KEY_CACHE_DURATION, ENSURE_NUMBER(DEFAULT_CACHE_DURATION, 21600)),
+        apiKey: properties.getProperty(PROPERTY_KEY_OPENAPI) || OPENAI_API_KEY,
+    };
+}
+/**
+ * Resets all environment variable settings to their default values.
+ */
+function resetSettings() {
+    PropertiesService.getUserProperties().deleteAllProperties();
+    return {
+        systemPrompt: SYSTEM_PROMPT,
+        maxTokens: DEFAULT_MAX_TOKENS,
+        temperature: DEFAULT_TEMPERATURE,
+        cacheDuration: DEFAULT_CACHE_DURATION,
+        apiKey: ''
+    };
+}
+/**
+ * Creates a custom menu in Google Sheets when the spreadsheet opens.
+ */
+function onOpen() {
+    SpreadsheetApp.getUi()
+        .createMenu('LLM Settings')
+        .addItem('OpenAI Settings', 'showSettingsSidebar')
+        .addItem('OpenAI Formulas', 'showFormulaSidebar')
+        .addToUi();
+}
 function PROPERTY_API_KEY_SET(apiKey) {
     const properties = PropertiesService.getUserProperties();
     if (apiKey === null || apiKey === undefined) {
@@ -209,9 +325,33 @@ function PROPERTY_API_KEY_GET() {
     const properties = PropertiesService.getUserProperties();
     const apiKey = properties.getProperty(PROPERTY_KEY_OPENAPI) || OPENAI_API_KEY;
     if (!apiKey) {
-        throw new Error('Use =CHATGPTKEY("YOUR_API_KEY") first. Get it from https://platform.openai.com/api-keys');
+        throw new Error('Use =OPENAIKEY("YOUR_API_KEY") first. Get it from https://platform.openai.com/api-keys');
     }
     return apiKey;
+}
+function PROPERTY_SYSTEM_PROMPT_SET(prompt) {
+    const properties = PropertiesService.getUserProperties();
+    if (prompt === null || prompt === undefined) {
+        properties.deleteProperty(PROPERTY_KEY_SYSTEM_PROMPT);
+    }
+    else {
+        properties.setProperty(PROPERTY_KEY_SYSTEM_PROMPT, prompt);
+    }
+}
+function PROPERTY_SYSTEM_PROMPT_GET() {
+    const properties = PropertiesService.getUserProperties();
+    // Check for CHATGPTSYSTEMPROMPT value first
+    const functionPrompt = properties.getProperty(PROPERTY_KEY_SYSTEM_PROMPT);
+    if (functionPrompt) {
+        return functionPrompt;
+    }
+    // Fall back to sidebar value
+    const sidebarPrompt = properties.getProperty(PROPERTY_KEY_SYSTEM_PROMPT);
+    if (sidebarPrompt) {
+        return sidebarPrompt;
+    }
+    // Finally fall back to default
+    return SYSTEM_PROMPT;
 }
 function STRING_CLEAN(value) {
     if (value === undefined || value === null) {
@@ -240,4 +380,16 @@ function GET_CACHE() {
     return (CacheService.getDocumentCache() ||
         CacheService.getScriptCache() ||
         CacheService.getUserCache());
+}
+function PROPERTY_GET_NUMBER(properties, key, defaultValue) {
+    const value = properties.getProperty(key);
+    if (!value)
+        return defaultValue;
+    const parsed = Number(value);
+    return isNaN(parsed) ? defaultValue : parsed;
+}
+function ENSURE_NUMBER(value, fallback) {
+    if (value === null || value === undefined)
+        return fallback;
+    return value;
 }
