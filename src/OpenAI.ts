@@ -295,28 +295,33 @@ function CHATGPTSYSTEMPROMPT(prompt: string): string {
  * @customfunction
  */
 function OPENAIMODELS(): Array<Array<string>> {
-  const apiKey = PROPERTY_API_KEY_GET();
+  try {
+    const apiKey = PROPERTY_API_KEY_GET();
 
-  const options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
-    method: "get",
-    contentType: MIME_JSON,
-    headers: {
-      Accept: MIME_JSON,
-      Authorization: `Bearer ${apiKey}`,
-    },
-  };
-  const response = UrlFetchApp.fetch(
-    "https://api.openai.com/v1/models",
-    options,
-  );
-  const json = response.getContentText();
-  const data = JSON.parse(json) as ModelsPage;
-  if (!Array.isArray(data["data"]) || data["data"].length === 0) {
-    return [["🌵 No models available"]];
+    const options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
+      method: "get",
+      contentType: MIME_JSON,
+      headers: {
+        Accept: MIME_JSON,
+        Authorization: `Bearer ${apiKey}`,
+      },
+    };
+    const response = UrlFetchApp.fetch(
+      "https://api.openai.com/v1/models",
+      options,
+    );
+    const json = response.getContentText();
+    const data = JSON.parse(json) as ModelsPage;
+    if (!Array.isArray(data["data"]) || data["data"].length === 0) {
+      return [["🌵 No models available"]];
+    }
+    // Sort models alphabetically for better display
+    return data["data"]
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((model) => [model["id"]]);
+  } catch (error) {
+    return [[`Error: ${error instanceof Error ? error.message : String(error)}`]];
   }
-  return data["data"].map((model) => {
-    return [model["id"]];
-  });
 }
 
 /**
@@ -329,9 +334,23 @@ function showSettingsSidebar() {
     .setWidth(400);
   SpreadsheetApp.getUi().showSidebar(html);
 }
+/**
+ * Shows a sidebar in the Google Sheets UI with formulas.
+ * This function creates a custom UI element that lets users see available formulas.
+ */
 function showFormulaSidebar() {
   const html = HtmlService.createHtmlOutputFromFile('OpenAI-Formulas')
     .setTitle('OpenAI Formulas')
+    .setWidth(400);
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+/**
+ * Shows a sidebar in the Google Sheets UI with available models.
+ * This function creates a custom UI element that lets users see available models.
+ */
+function showModelsSidebar() {
+  const html = HtmlService.createHtmlOutputFromFile('OpenAI-Models')
+    .setTitle('OpenAI Models')
     .setWidth(400);
   SpreadsheetApp.getUi().showSidebar(html);
 }
@@ -395,9 +414,10 @@ function resetSettings() {
  */
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('LLM Settings')
+    .createMenu('LLMs For Sheets')
     .addItem('OpenAI Settings', 'showSettingsSidebar')
     .addItem('OpenAI Formulas', 'showFormulaSidebar')
+    .addItem('OpenAI Models', 'showModelsSidebar')
     .addToUi();
 }
 

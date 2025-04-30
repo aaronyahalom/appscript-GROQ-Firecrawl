@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 10px;
+      }
+      .model-list {
+        margin-top: 10px;
+      }
+      .model-item {
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+      }
+      .model-item:hover {
+        background-color: #f5f5f5;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Available OpenAI Models</h3>
+    <div id="modelList" class="model-list">
+      Loading models...
+    </div>
+
+    <script>
+      google.script.run
+        .withSuccessHandler(function(models) {
+          const modelList = document.getElementById('modelList');
+          modelList.innerHTML = '';
+          
+          if (!models || models.length === 0) {
+            modelList.innerHTML = '<div class="model-item">No models available</div>';
+            return;
+          }
+
+          models.forEach(function(model) {
+            const div = document.createElement('div');
+            div.className = 'model-item';
+            div.textContent = model[0];
+            modelList.appendChild(div);
+          });
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('modelList').innerHTML = 
+            '<div class="model-item" style="color: red;">Error loading models: ' + error + '</div>';
+        })
+        .OPENAIMODELS();
+    </script>
+  </body>
+</html>
