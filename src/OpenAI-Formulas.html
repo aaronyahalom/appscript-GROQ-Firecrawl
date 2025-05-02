@@ -76,6 +76,22 @@
   </div>
 
   <div class="formula">
+    <h3>=CHATGPTWEBSEARCH(prompt, [plainText], [maxTokens], [temperature])</h3>
+    <p>Uses GPT-4o with web search capability. Returns up-to-date answers from the web.</p>
+    <div class="example">=CHATGPTWEBSEARCH(A1) <span class="defaults">// formatted with citations (default)</span></div>
+    <div class="example">=CHATGPTWEBSEARCH(A1, TRUE) <span class="defaults">// plain text, no formatting or citations</span></div>
+    <div class="example">=CHATGPTWEBSEARCH(A1, FALSE, 300, 0.7) <span class="defaults">// formatted, custom tokens and temperature</span></div>
+    <div class="defaults">
+      Defaults:
+      <ul>
+        <li>plainText: FALSE (returns formatted response with citations)</li>
+        <li>maxTokens: 150</li>
+        <li>temperature: 0.0</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="formula">
     <h3>=OPENAIKEY(apiKey)</h3>
     <p>Sets your OpenAI API key.</p>
     <div class="example">=OPENAIKEY("your-api-key-here")</div>
