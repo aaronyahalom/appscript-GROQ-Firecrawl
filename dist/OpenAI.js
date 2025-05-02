@@ -76,17 +76,24 @@ function REQUEST_COMPLETIONS(apiKey, promptSystem, prompt, model, maxTokens, tem
      * https://developers.google.com/apps-script/reference/base/session?hl=gettemporaryactiveuserkey()
      */
     const user_id = Session.getTemporaryActiveUserKey();
-    const payload = {
+    // Base payload with common parameters
+    const basePayload = {
         stream: false,
         model: model,
         max_tokens: maxTokens,
         messages: messages,
-        temperature: temperature,
-        service_tier: "auto", // Handle rate limits automatically.
-        n: 1, // Number of completions to generate.
-        user: user_id, // User ID to associate with the conversation and let OpenAI handle abusers.
-        seed: DEFAULT_SEED,
     };
+    // Add optional parameters based on model
+    if (!model.includes("search")) {
+        Object.assign(basePayload, {
+            temperature: temperature,
+            service_tier: "auto",
+            n: 1,
+            user: user_id,
+            seed: DEFAULT_SEED,
+        });
+    }
+    const payload = basePayload;
     const options = {
         method: "post",
         contentType: MIME_JSON,
@@ -139,12 +146,8 @@ function CHATGPT(prompt, model = "gpt-4o-mini", maxTokens = DEFAULT_MAX_TOKENS, 
     const apiKey = PROPERTY_API_KEY_GET();
     const systemPrompt = PROPERTY_SYSTEM_PROMPT_GET(); // Get system prompt with proper priority
     if (Array.isArray(prompt)) {
-        return prompt.map((row) => {
-            return row.map((cell) => {
-                return REQUEST_COMPLETIONS(apiKey, systemPrompt, // Pass the prioritized system prompt
-                cell, model, maxTokens, temperature);
-            });
-        });
+        return prompt.map((row) => row.map((cell) => REQUEST_COMPLETIONS(apiKey, systemPrompt, // Pass the prioritized system prompt
+        cell, model, maxTokens, temperature)));
     }
     return REQUEST_COMPLETIONS(apiKey, systemPrompt, // Pass the prioritized system prompt
     prompt, model, maxTokens, temperature);
@@ -153,7 +156,7 @@ function CHATGPT(prompt, model = "gpt-4o-mini", maxTokens = DEFAULT_MAX_TOKENS, 
  * Custom function to call ChatGPT-3 API. This is the default and most cost-effective model.
  * Example: =CHATGPT3("Summarize the plot of the movie: " & A1)
  *
- * @param {string|Array<Array<string>>} prompt The prompt to send to ChatGPT
+ * @param {string|Array<Array<string>>} prompt The prompt to send to ChatGPT. For large arrays, ensure the input size is manageable to avoid performance issues.
  * @param {number} maxTokens [OPTIONAL] The maximum number of tokens to return. Default is 150, which is a short response. ChatGPT web default is 4096.
  * @param {number} temperature [OPTIONAL] The randomness of the response. Lower values are more deterministic. Default is 0.0 but ChatGPT web default is 0.7.
  * @return {string|Array<Array<string>>} The response from ChatGPT
@@ -174,6 +177,42 @@ function CHATGPT3(prompt, maxTokens = DEFAULT_MAX_TOKENS, temperature = DEFAULT_
  */
 function CHATGPT4(prompt, maxTokens = DEFAULT_MAX_TOKENS, temperature = DEFAULT_TEMPERATURE) {
     return CHATGPT(prompt, "gpt-4o", maxTokens, temperature);
+}
+/**
+ * Custom function to call ChatGPT API with web search capability.
+ * Example: =CHATGPTWEBSEARCH(A1)                   -> with formatting (default)
+ * Example: =CHATGPTWEBSEARCH(A1, TRUE)            -> plain text only
+ * Example: =CHATGPTWEBSEARCH(A1, FALSE, 150, 0.0) -> with all parameters
+ *
+ * @param {string|Array<Array<string>>} prompt The prompt to send to ChatGPT
+ * @param {boolean} plainText [OPTIONAL] Whether to return plain text without formatting or citations. Default is false.
+ * @param {number} maxTokens [OPTIONAL] The maximum number of tokens to return. Default is 150, which is a short response.
+ * @param {number} temperature [OPTIONAL] The randomness of the response. Lower values are more deterministic. Default is 0.0.
+ * @return {string|Array<Array<string>>} The response from ChatGPT
+ * @customfunction
+ */
+function CHATGPTWEBSEARCH(prompt, plainText = false, maxTokens = DEFAULT_MAX_TOKENS, temperature = DEFAULT_TEMPERATURE) {
+    const apiKey = PROPERTY_API_KEY_GET();
+    const systemPrompt = PROPERTY_SYSTEM_PROMPT_GET();
+    // Helper function to process search results
+    const processSearchResult = (searchResult) => {
+        if (!plainText)
+            return searchResult;
+        // If plain text is requested, pass through GPT-4 to clean it
+        return CHATGPT(`Convert this response to plain text without any formatting, citations, or special characters:\n\n${searchResult}`, "gpt-4o", maxTokens, temperature);
+    };
+    if (Array.isArray(prompt)) {
+        // Handle 2D array (range)
+        return prompt.map((row) => row.map((cell) => {
+            const searchResult = REQUEST_COMPLETIONS(apiKey, systemPrompt, cell, "gpt-4o-search-preview", maxTokens, temperature);
+            return processSearchResult(searchResult);
+        }));
+    }
+    else {
+        // Handle single cell
+        const searchResult = REQUEST_COMPLETIONS(apiKey, systemPrompt, prompt, "gpt-4o-search-preview", maxTokens, temperature);
+        return processSearchResult(searchResult);
+    }
 }
 /**
  * Custom function to set the OpenAI API key. Get yours at: https://platform.openai.com/api-keys
