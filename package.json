@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "author": "Regan McGregor <me@reganmcgregor.com.au>",
   "description": "=CHATGPT() formula for Google Spreadsheets.",
-  "main": "dist/Code.js",
+  "main": "dist/OpenAI.js",
   "scripts": {
     "build": "tsc && cp src/*.html dist/",
     "lint": "biome check --diagnostic-level=error --write --unsafe ."

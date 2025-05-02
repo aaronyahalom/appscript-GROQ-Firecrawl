@@ -4,7 +4,8 @@
  * @version 1.0.0
  * @description Google Apps Script for OpenAI API integration in Google Sheets.
  * @see {@link https://github.com/reganmcgregor/appscript-llm}
- */
+ * @credits Originally forked from urvana/appscript-chatgpt by Patricio López Juri.
+ **********************************************/
 
 import type { ChatModel } from "openai/resources/chat/chat";
 import type {
