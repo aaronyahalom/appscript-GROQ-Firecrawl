@@ -38,7 +38,10 @@
   <div class="formula">
     <h3>=CHATGPT(prompt, [model], [maxTokens], [temperature])</h3>
     <p>Main function for ChatGPT API calls.</p>
-    <div class="example">=CHATGPT("What is the capital of " & A1 & "?")</div>
+    <div class="example">=CHATGPT("What is the capital of " & A1)</div>
+    <div class="example">=CHATGPT(A1, "gpt-4o") <span class="defaults">// specify model</span></div>
+    <div class="example">=CHATGPT(A1, "gpt-4o", 300) <span class="defaults">// with custom token length</span></div>
+    <div class="example">=CHATGPT(A1, "gpt-4o", 300, 0.7) <span class="defaults">// all parameters</span></div>
     <div class="defaults">
       Defaults:
       <ul>
@@ -52,7 +55,9 @@
   <div class="formula">
     <h3>=CHATGPT3(prompt, [maxTokens], [temperature])</h3>
     <p>Uses GPT-3.5-turbo model (most cost-effective).</p>
-    <div class="example">=CHATGPT3("Summarize: " & A1)</div>
+    <div class="example">=CHATGPT3(A1)</div>
+    <div class="example">=CHATGPT3(A1, 300) <span class="defaults">// with custom token length</span></div>
+    <div class="example">=CHATGPT3(A1, 300, 0.7) <span class="defaults">// all parameters</span></div>
     <div class="defaults">
       Defaults:
       <ul>
@@ -65,10 +70,29 @@
   <div class="formula">
     <h3>=CHATGPT4(prompt, [maxTokens], [temperature])</h3>
     <p>Uses GPT-4 model (most powerful).</p>
-    <div class="example">=CHATGPT4("Analyze: " & A1)</div>
+    <div class="example">=CHATGPT4(A1)</div>
+    <div class="example">=CHATGPT4(A1, 300) <span class="defaults">// with custom token length</span></div>
+    <div class="example">=CHATGPT4(A1, 300, 0.7) <span class="defaults">// all parameters</span></div>
     <div class="defaults">
       Defaults:
       <ul>
+        <li>maxTokens: 150</li>
+        <li>temperature: 0.0</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="formula">
+    <h3>=CHATGPTWEBSEARCH(prompt, [plainText], [maxTokens], [temperature])</h3>
+    <p>Uses GPT-4o with web search capability. Returns up-to-date answers from the web.</p>
+    <div class="example">=CHATGPTWEBSEARCH(A1)</div>
+    <div class="example">=CHATGPTWEBSEARCH(A1, TRUE) <span class="defaults">// plain text only</span></div>
+    <div class="example">=CHATGPTWEBSEARCH(A1, FALSE, 300) <span class="defaults">// with custom token length</span></div>
+    <div class="example">=CHATGPTWEBSEARCH(A1, FALSE, 300, 0.7) <span class="defaults">// all parameters</span></div>
+    <div class="defaults">
+      Defaults:
+      <ul>
+        <li>plainText: FALSE</li>
         <li>maxTokens: 150</li>
         <li>temperature: 0.0</li>
       </ul>

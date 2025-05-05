@@ -4,7 +4,8 @@
  * @version 1.0.0
  * @description Google Apps Script for OpenAI API integration in Google Sheets.
  * @see {@link https://github.com/reganmcgregor/appscript-llm}
- */
+ * @credits Originally forked from urvana/appscript-chatgpt by Patricio López Juri.
+ **********************************************/
 /** You can change this. */
 const SYSTEM_PROMPT = `You are a helpful assistant integrated within a Google Sheets application.
   Your task is to provide accurate, concise, and user-friendly responses to user prompts.
@@ -136,7 +137,7 @@ function REQUEST_COMPLETIONS(apiKey, promptSystem, prompt, model, maxTokens, tem
  * Example: =CHATGPT("What is the average height of " & A1 & "?")
  *
  * @param {string|Array<Array<string>>} prompt The prompt to send to ChatGPT.
- * @param {string} model [OPTIONAL] The model to use (e.g., "gpt-3.5-turbo", "gpt-4"). Default is "gpt-3.5-turbo" which is the most cost-effective.
+ * @param {string} model [OPTIONAL] The model to use (e.g., "gpt-3.5-turbo", "gpt-4"). Default is "gpt-4o-mini" which is the most cost-effective.
  * @param {number} maxTokens [OPTIONAL] The maximum number of tokens to return. Default is 150, which is a short response. ChatGPT web default is 4096.
  * @param {number} temperature [OPTIONAL] The randomness of the response. Lower values are more deterministic. Default is 0.0 but ChatGPT web default is 0.7.
  * @return {string|Array<Array<string>>} The response from ChatGPT.
