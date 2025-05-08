@@ -220,12 +220,14 @@ Copy and paste each file into your Apps Script editor with the exact filename:
 
 #### OpenAI.js
 ```javascript/**********************************************
+/**********************************************
  * @author Regan McGregor <https://www.linkedin.com/in/regan-mcgregor/>
  * @license MIT
  * @version 1.0.0
  * @description Google Apps Script for OpenAI API integration in Google Sheets.
  * @see {@link https://github.com/reganmcgregor/appscript-llm}
- */
+ * @credits Originally forked from urvana/appscript-chatgpt by Patricio López Juri.
+ **********************************************/
 /** You can change this. */
 const SYSTEM_PROMPT = `You are a helpful assistant integrated within a Google Sheets application.
   Your task is to provide accurate, concise, and user-friendly responses to user prompts.
