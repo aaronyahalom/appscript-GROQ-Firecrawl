@@ -1,9 +1,9 @@
 {
   "name": "@reganmcgregor/appscript-llm",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "Regan McGregor <me@reganmcgregor.com.au>",
-  "description": "=CHATGPT() formula for Google Spreadsheets.",
-  "main": "dist/OpenAI.js",
+  "description": "Multi-provider LLM formulas for Google Spreadsheets. Supports OpenAI, OpenRouter (Claude, Gemini, and more).",
+  "main": "dist/Main.js",
   "scripts": {
     "build": "tsc && cp src/*.html dist/",
     "lint": "biome check --diagnostic-level=error --write --unsafe ."

@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Formulas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+    /* Material Design 3 Design System */
+    :root {
+      /* Google-aligned Color Tokens */
+      --md-sys-color-primary: #1976d2;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-primary-container: #e3f2fd;
+      --md-sys-color-on-primary-container: #0d47a1;
+      
+      --md-sys-color-secondary: #5f6368;
+      --md-sys-color-on-secondary: #ffffff;
+      --md-sys-color-secondary-container: #f8f9fa;
+      --md-sys-color-on-secondary-container: #3c4043;
+      
+      --md-sys-color-tertiary: #34a853;
+      --md-sys-color-on-tertiary: #ffffff;
+      --md-sys-color-tertiary-container: #e8f5e8;
+      --md-sys-color-on-tertiary-container: #137333;
+      
+      --md-sys-color-error: #d93025;
+      --md-sys-color-on-error: #ffffff;
+      --md-sys-color-error-container: #fce8e6;
+      --md-sys-color-on-error-container: #b71c1c;
+      
+      --md-sys-color-background: #ffffff;
+      --md-sys-color-on-background: #202124;
+      --md-sys-color-surface: #ffffff;
+      --md-sys-color-on-surface: #202124;
+      --md-sys-color-surface-variant: #f8f9fa;
+      --md-sys-color-on-surface-variant: #5f6368;
+      
+      --md-sys-color-outline: #dadce0;
+      --md-sys-color-outline-variant: #e8eaed;
+      --md-sys-color-surface-container-lowest: #ffffff;
+      --md-sys-color-surface-container-low: #fafbfc;
+      --md-sys-color-surface-container: #f8f9fa;
+      --md-sys-color-surface-container-high: #f1f3f4;
+      --md-sys-color-surface-container-highest: #e8eaed;
+      
+      /* Typography - Google Sans and Roboto mix */
+      --md-ref-typeface-brand: 'Google Sans', 'Roboto', system-ui, sans-serif;
+      --md-ref-typeface-plain: 'Roboto', system-ui, sans-serif;
+      
+      /* Typography Scale */
+      --md-sys-typescale-label-small-size: 11px;
+      --md-sys-typescale-label-small-line-height: 16px;
+      --md-sys-typescale-label-medium-size: 12px;
+      --md-sys-typescale-label-medium-line-height: 16px;
+      --md-sys-typescale-label-large-size: 14px;
+      --md-sys-typescale-label-large-line-height: 20px;
+      --md-sys-typescale-body-small-size: 12px;
+      --md-sys-typescale-body-small-line-height: 16px;
+      --md-sys-typescale-body-medium-size: 14px;
+      --md-sys-typescale-body-medium-line-height: 20px;
+      --md-sys-typescale-title-small-size: 14px;
+      --md-sys-typescale-title-small-line-height: 20px;
+      
+      /* Shape System */
+      --md-sys-shape-corner-none: 0px;
+      --md-sys-shape-corner-extra-small: 4px;
+      --md-sys-shape-corner-small: 8px;
+      --md-sys-shape-corner-medium: 12px;
+      --md-sys-shape-corner-large: 16px;
+      
+      /* Component Spacing */
+      --md-comp-spacing-small: 8px;
+      --md-comp-spacing-medium: 12px;
+      --md-comp-spacing-large: 16px;
+      --md-comp-spacing-extra-large: 24px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--md-ref-typeface-plain);
+      font-size: var(--md-sys-typescale-body-medium-size);
+      line-height: var(--md-sys-typescale-body-medium-line-height);
+      color: var(--md-sys-color-on-background);
+      background-color: var(--md-sys-color-background);
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .app-container {
+      max-width: 100%;
+      width: 100%;
+    }
+
+    /* Navigation Tabs - Google Style */
+    .nav-tabs {
+      display: flex;
+      background-color: var(--md-sys-color-surface);
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: var(--md-comp-spacing-medium) var(--md-comp-spacing-small);
+      font-family: var(--md-ref-typeface-brand);
+      font-size: var(--md-sys-typescale-label-large-size);
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface-variant);
+      cursor: pointer;
+      text-align: center;
+      position: relative;
+      transition: color 200ms cubic-bezier(0.2, 0, 0, 1);
+      border-bottom: 2px solid transparent;
+    }
+
+    .nav-tab:hover:not(.active) {
+      color: var(--md-sys-color-on-surface);
+      background-color: var(--md-sys-color-surface-container-low);
+    }
+
+    .nav-tab.active {
+      color: var(--md-sys-color-primary);
+      border-bottom-color: var(--md-sys-color-primary);
+    }
+
+    /* Content Area */
+    .content {
+      padding: var(--md-comp-spacing-large);
+      max-width: 100%;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Provider Section */
+    .provider-section {
+      margin-bottom: var(--md-comp-spacing-large);
+    }
+
+    .provider-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--md-comp-spacing-medium) 0;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .provider-title {
+      display: flex;
+      align-items: center;
+      gap: var(--md-comp-spacing-small);
+      font-family: var(--md-ref-typeface-brand);
+      font-size: var(--md-sys-typescale-title-small-size);
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .provider-title > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .provider-title > div > div:first-child {
+      font-size: var(--md-sys-typescale-title-small-size);
+      font-weight: 500;
+    }
+
+    .provider-logo {
+      width: 20px;
+      height: 20px;
+      border-radius: var(--md-sys-shape-corner-extra-small);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: var(--md-sys-typescale-label-small-size);
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-connected .status-dot {
+      background-color: var(--md-sys-color-tertiary);
+    }
+
+    .status-disconnected .status-dot {
+      background-color: var(--md-sys-color-error);
+    }
+
+    .status-connected {
+      color: var(--md-sys-color-tertiary);
+    }
+
+    .status-disconnected {
+      color: var(--md-sys-color-error);
+    }
+
+    .expand-icon {
+      transition: transform 200ms cubic-bezier(0.2, 0, 0, 1);
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .expand-icon.expanded {
+      transform: rotate(180deg);
+    }
+
+    .provider-content {
+      display: none;
+      padding: var(--md-comp-spacing-large) 0 0 0;
+    }
+
+    .provider-content.expanded {
+      display: block;
+    }
+
+    /* Form Inputs */
+    .input-group {
+      margin-bottom: var(--md-comp-spacing-large);
+    }
+
+    .input-label {
+      display: block;
+      font-size: var(--md-sys-typescale-label-medium-size);
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface-variant);
+      margin-bottom: 4px;
+    }
+
+    .text-input, .select-input {
+      width: 100%;
+      padding: var(--md-comp-spacing-medium);
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--md-sys-shape-corner-small);
+      font-family: var(--md-ref-typeface-plain);
+      font-size: var(--md-sys-typescale-body-medium-size);
+      color: var(--md-sys-color-on-surface);
+      background-color: var(--md-sys-color-surface);
+      transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
+      resize: vertical;
+    }
+
+    .text-input:focus, .select-input:focus {
+      outline: none;
+      border-color: var(--md-sys-color-primary);
+      border-width: 2px;
+      padding: calc(var(--md-comp-spacing-medium) - 1px);
+    }
+
+    .text-input::placeholder {
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    textarea.text-input {
+      min-height: 80px;
+      font-family: var(--md-ref-typeface-plain);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--md-comp-spacing-small);
+      padding: 10px var(--md-comp-spacing-large);
+      border: none;
+      border-radius: var(--md-sys-shape-corner-large);
+      font-family: var(--md-ref-typeface-brand);
+      font-size: var(--md-sys-typescale-label-large-size);
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
+      min-height: 40px;
+    }
+
+    .btn-primary {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+    }
+
+    .btn-primary:hover {
+      background-color: #1565c0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--md-sys-color-primary);
+      border: 1px solid var(--md-sys-color-outline);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--md-sys-color-primary-container);
+      border-color: var(--md-sys-color-primary);
+    }
+
+    .btn-text {
+      background-color: transparent;
+      color: var(--md-sys-color-primary);
+      padding: 8px var(--md-comp-spacing-medium);
+    }
+
+    .btn-text:hover {
+      background-color: var(--md-sys-color-primary-container);
+    }
+
+    /* Messages */
+    .message {
+      padding: var(--md-comp-spacing-medium);
+      border-radius: var(--md-sys-shape-corner-small);
+      margin-bottom: var(--md-comp-spacing-medium);
+      font-size: var(--md-sys-typescale-body-small-size);
+    }
+
+    .message-error {
+      background-color: var(--md-sys-color-error-container);
+      color: var(--md-sys-color-on-error-container);
+    }
+
+    .message-success {
+      background-color: var(--md-sys-color-tertiary-container);
+      color: var(--md-sys-color-on-tertiary-container);
+    }
+
+    .message-info {
+      background-color: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+    }
+
+    /* Loading State */
+    .loading {
+      text-align: center;
+      padding: var(--md-comp-spacing-extra-large);
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    /* Utility Classes */
+    .text-caption {
+      font-size: var(--md-sys-typescale-body-small-size);
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .divider {
+      height: 1px;
+      background-color: var(--md-sys-color-outline-variant);
+      margin: var(--md-comp-spacing-large) 0;
+    }
+
+    /* Model Grid */
+    .model-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--md-comp-spacing-medium);
+    }
+
+    .model-item {
+      padding: var(--md-comp-spacing-medium);
+      background-color: var(--md-sys-color-surface-container-low);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-small);
+      position: relative;
+    }
+
+    .model-item.hidden {
+      display: none;
+    }
+
+    .model-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .model-name {
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 2px;
+    }
+
+    .model-id {
+      font-family: 'Courier New', monospace;
+      font-size: var(--md-sys-typescale-body-small-size);
+      color: var(--md-sys-color-on-surface-variant);
+      background-color: var(--md-sys-color-surface-container);
+      padding: 2px 6px;
+      border-radius: var(--md-sys-shape-corner-extra-small);
+      margin-bottom: 4px;
+    }
+
+    .model-description {
+      font-size: var(--md-sys-typescale-body-small-size);
+      color: var(--md-sys-color-on-surface-variant);
+      margin-bottom: 8px;
+    }
+
+    .model-provider {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--md-sys-shape-corner-small);
+      font-size: var(--md-sys-typescale-label-small-size);
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .model-provider.openai {
+      background-color: var(--md-sys-color-tertiary-container);
+      color: var(--md-sys-color-on-tertiary-container);
+    }
+
+    .model-provider.openrouter {
+      background-color: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+    }
+
+    .model-pricing {
+      font-size: var(--md-sys-typescale-label-small-size);
+      color: var(--md-sys-color-on-surface-variant);
+      margin-top: 4px;
+    }
+
+    /* Provider Filter Tabs */
+    .provider-filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .filter-tab {
+      padding: 8px 16px;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--md-sys-shape-corner-small);
+      background-color: var(--md-sys-color-surface);
+      color: var(--md-sys-color-on-surface);
+      font-size: var(--md-sys-typescale-label-large-size);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-tab:hover {
+      background-color: var(--md-sys-color-surface-container);
+    }
+
+    .filter-tab.active {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border-color: var(--md-sys-color-primary);
+    }
+
+    /* Models Sections */
+    .models-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-family: var(--md-ref-typeface-brand);
+      font-size: var(--md-sys-typescale-title-small-size);
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 12px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    }
+
+    /* Formula Examples */
+    .formula-example {
+      background-color: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-sys-shape-corner-small);
+      padding: var(--md-comp-spacing-medium);
+      margin-bottom: var(--md-comp-spacing-medium);
+      font-family: 'Courier New', monospace;
+      font-size: var(--md-sys-typescale-body-small-size);
+      word-break: break-all;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 320px) {
+      .content {
+        padding: var(--md-comp-spacing-medium);
+      }
+      
+      .nav-tab {
+        padding: var(--md-comp-spacing-small);
+        font-size: var(--md-sys-typescale-label-medium-size);
+      }
+    }
+
+    /* Scrollbar - Google Style */
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--md-sys-color-outline-variant);
+      border-radius: 6px;
+      border: 3px solid var(--md-sys-color-background);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--md-sys-color-outline);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('settings')">Settings</button>
+      <button class="nav-tab" onclick="showTab('formulas')">Formulas</button>
+      <button class="nav-tab" onclick="showTab('models')">Models</button>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content">
+      <!-- Settings Tab -->
+      <div id="settings" class="tab-content active">
+        <!-- General Settings -->
+        <div class="provider-section">
+          <div class="provider-header" onclick="toggleProvider('general')">
+            <div class="provider-title">
+              <span class="material-icons provider-logo">settings</span>
+              General Settings
+            </div>
+            <div>
+              <span class="material-icons expand-icon" id="general-expand">expand_more</span>
+            </div>
+          </div>
+          <div class="provider-content" id="general-content">
+            <div class="input-group">
+              <label class="input-label" for="system-prompt">System Prompt</label>
+              <textarea id="system-prompt" class="text-input" rows="3" 
+                        placeholder="You are a helpful assistant integrated within a Google Sheets application..."
+                        onchange="saveGeneralSettings()"></textarea>
+              <div class="text-caption">The system prompt that guides the AI's behavior. Leave empty to use default.</div>
+            </div>
+            <div class="input-group">
+              <label class="input-label" for="max-tokens">Max Tokens</label>
+              <input type="number" id="max-tokens" class="text-input" min="1" max="4000" 
+                     placeholder="150" onchange="saveGeneralSettings()">
+              <div class="text-caption">Maximum length of AI responses (1-4000). Lower values = shorter responses.</div>
+            </div>
+            <div class="input-group">
+              <label class="input-label" for="temperature">Temperature</label>
+              <input type="number" id="temperature" class="text-input" min="0" max="2" step="0.1" 
+                     placeholder="0.0" onchange="saveGeneralSettings()">
+              <div class="text-caption">Creativity level (0.0 = focused, 2.0 = creative). Lower values = more deterministic.</div>
+            </div>
+            <div class="input-group">
+              <label class="input-label" for="cache-duration">Cache Duration (seconds)</label>
+              <input type="number" id="cache-duration" class="text-input" min="-1" 
+                     placeholder="21600" onchange="saveGeneralSettings()">
+              <div class="text-caption">How long to cache responses. 0 = no cache, -1 = cache forever, 21600 = 6 hours.</div>
+            </div>
+            <div class="input-group">
+              <button class="btn btn-primary" onclick="saveGeneralSettings()">Save Settings</button>
+              <button class="btn btn-text" onclick="resetGeneralSettings()">Reset to Defaults</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OpenAI Provider -->
+        <div class="provider-section">
+          <div class="provider-header" onclick="toggleProvider('openai')">
+            <div class="provider-title">
+              <svg class="provider-logo" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/>
+              </svg>
+              <div>
+                <div>OpenAI</div>
+                <div class="status-indicator status-disconnected" id="openai-status">
+                  <span class="status-dot"></span>
+                  <span>Disconnected</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <span class="material-icons expand-icon" id="openai-expand">expand_more</span>
+            </div>
+          </div>
+          <div class="provider-content" id="openai-content">
+            <div class="input-group">
+              <label class="input-label" for="openai-api-key">API Key</label>
+              <input type="password" id="openai-api-key" class="text-input" placeholder="sk-..." 
+                     onchange="saveOpenAISettings()">
+            </div>
+            <div class="input-group">
+              <label class="input-label" for="openai-model">Default Model</label>
+              <select id="openai-model" class="select-input" onchange="saveOpenAISettings()">
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="gpt-4o-mini">GPT-4o Mini</option>
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <button class="btn btn-primary" onclick="testOpenAIConnection()">Test Connection</button>
+              <button class="btn btn-text" onclick="clearOpenAISettings()">Clear Settings</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OpenRouter Provider -->
+        <div class="provider-section">
+          <div class="provider-header" onclick="toggleProvider('openrouter')">
+            <div class="provider-title">
+              <svg class="provider-logo" fill="currentColor" fill-rule="evenodd" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <title>OpenRouter</title>
+                <path d="M16.804 1.957l7.22 4.105v.087L16.73 10.21l.017-2.117-.821-.03c-1.059-.028-1.611.002-2.268.11-1.064.175-2.038.577-3.147 1.352L8.345 11.03c-.284.195-.495.336-.68.455l-.515.322-.397.234.385.23.53.338c.476.314 1.17.796 2.701 1.866 1.11.775 2.083 1.177 3.147 1.352l.3.045c.694.091 1.375.094 2.825.033l.022-2.159 7.22 4.105v.087L16.589 22l.014-1.862-.635.022c-1.386.042-2.137.002-3.138-.162-1.694-.28-3.26-.926-4.881-2.059l-2.158-1.5a21.997 21.997 0 00-.755-.498l-.467-.28a55.927 55.927 0 00-.76-.43C2.908 14.73.563 14.116 0 14.116V9.888l.14.004c.564-.007 2.91-.622 3.809-1.124l1.016-.58.438-.274c.428-.28 1.072-.726 2.686-1.853 1.621-1.133 3.186-1.78 4.881-2.059 1.152-.19 1.974-.213 3.814-.138l.02-1.907z"/>
+              </svg>
+              <div>
+                <div>OpenRouter</div>
+                <div class="status-indicator status-disconnected" id="openrouter-status">
+                  <span class="status-dot"></span>
+                  <span>Disconnected</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <span class="material-icons expand-icon" id="openrouter-expand">expand_more</span>
+            </div>
+          </div>
+          <div class="provider-content" id="openrouter-content">
+            <div class="input-group">
+              <label class="input-label" for="openrouter-api-key">API Key</label>
+              <input type="password" id="openrouter-api-key" class="text-input" placeholder="sk-or-..." 
+                     onchange="saveOpenRouterSettings()">
+            </div>
+            <div class="input-group">
+              <label class="input-label" for="openrouter-model">Default Model</label>
+              <select id="openrouter-model" class="select-input" onchange="saveOpenRouterSettings()">
+                <!-- Most Popular Models (Top Rankings 2025) -->
+                <optgroup label="🔥 Most Popular">
+                  <option value="google/gemini-pro-1.5">Google Gemini Pro 1.5</option>
+                  <option value="anthropic/claude-3.5-sonnet">Anthropic Claude 3.5 Sonnet</option>
+                  <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
+                  <option value="qwen/qwen-2.5-72b-instruct">Qwen 2.5 72B Instruct</option>
+                </optgroup>
+                
+                <!-- Premium Models -->
+                <optgroup label="💎 Premium">
+                  <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
+                  <option value="openai/gpt-4o">OpenAI GPT-4o</option>
+                  <option value="google/gemini-pro">Google Gemini Pro</option>
+                </optgroup>
+                
+                <!-- Fast & Efficient -->
+                <optgroup label="⚡ Fast & Efficient">
+                  <option value="anthropic/claude-3-haiku">Claude 3 Haiku</option>
+                  <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+                  <option value="google/gemini-flash-1.5">Gemini Flash 1.5</option>
+                  <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
+                </optgroup>
+                
+                <!-- Open Source -->
+                <optgroup label="🌟 Open Source">
+                  <option value="meta-llama/llama-3.1-405b-instruct">Llama 3.1 405B</option>
+                  <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
+                  <option value="qwen/qwen-2.5-72b-instruct">Qwen 2.5 72B</option>
+                  <option value="mistralai/mistral-large">Mistral Large</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="input-group">
+              <button class="btn btn-primary" onclick="testOpenRouterConnection()">Test Connection</button>
+              <button class="btn btn-text" onclick="clearOpenRouterSettings()">Clear Settings</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulas Tab -->
+      <div id="formulas" class="tab-content">
+        <div style="margin-bottom: 16px;">
+          <h3 style="font-family: var(--md-ref-typeface-brand); color: var(--md-sys-color-on-surface); margin-bottom: 8px;">
+            Available Formula Functions
+          </h3>
+          <p class="text-caption">Use these functions in your Google Sheets to interact with AI models.</p>
+        </div>
+
+        <div class="formula-example">
+          <strong>OPENAI</strong>(prompt, [model], [temperature], [max_tokens])<br>
+          Example: =OPENAI("Summarize this data", "gpt-4o", 0.7, 500)
+        </div>
+
+        <div class="formula-example">
+          <strong>OPENROUTER</strong>(prompt, [model], [temperature], [max_tokens])<br>
+          Example: =OPENROUTER("Analyze this trend", "google/gemini-pro-1.5")
+        </div>
+
+        <div class="formula-example">
+          <strong>OPENAI_SEARCH</strong>(query, [model])<br>
+          Example: =OPENAI_SEARCH("Latest AI research 2024")
+        </div>
+
+        <div style="margin-top: 16px;">
+          <h4 style="font-family: var(--md-ref-typeface-brand); color: var(--md-sys-color-on-surface); margin-bottom: 8px;">
+            Quick Tips
+          </h4>
+          <ul style="margin-left: 16px; color: var(--md-sys-color-on-surface-variant);">
+            <li>Use cell references in prompts: =OPENAI("Analyze: " & A1)</li>
+            <li>Chain functions: =OPENROUTER("Improve: " & OPENAI(A1))</li>
+            <li>Control creativity with temperature (0.0 = focused, 1.0 = creative)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Models Tab -->
+      <div id="models" class="tab-content">
+        <div style="margin-bottom: 16px;">
+          <h3 style="font-family: var(--md-ref-typeface-brand); color: var(--md-sys-color-on-surface); margin-bottom: 8px;">
+            Available Models
+          </h3>
+          <p class="text-caption">Models available through your configured providers.</p>
+        </div>
+
+        <!-- Search Box -->
+        <div class="input-group" style="margin-bottom: 16px;">
+          <label class="input-label" for="model-search">Search Models</label>
+          <input type="text" id="model-search" class="text-input" placeholder="Search by name or provider..." 
+                 oninput="filterModels()">
+        </div>
+
+        <!-- Provider Filter Tabs -->
+        <div class="provider-filter-tabs" style="margin-bottom: 16px;">
+          <button class="filter-tab active" onclick="filterByProvider('all')" data-provider="all">All Models</button>
+          <button class="filter-tab" onclick="filterByProvider('openai')" data-provider="openai">OpenAI</button>
+          <button class="filter-tab" onclick="filterByProvider('openrouter')" data-provider="openrouter">OpenRouter</button>
+        </div>
+
+        <div class="loading" id="models-loading">Loading models...</div>
+        <div id="models-container" style="display: none;">
+          <!-- Top 25 Most Popular Models -->
+          <div class="models-section">
+            <h4 class="section-title">🔥 Top 25 Most Popular</h4>
+            <div class="model-grid" id="top-models-grid"></div>
+          </div>
+
+          <!-- All Other Models -->
+          <div class="models-section" id="other-models-section" style="display: none;">
+            <h4 class="section-title">📋 All Models</h4>
+            <div class="model-grid" id="all-models-grid"></div>
+          </div>
+
+          <!-- Show More Button -->
+          <div style="text-align: center; margin-top: 16px;">
+            <button class="btn btn-text" id="show-more-btn" onclick="toggleAllModels()">
+              Show All Models (<span id="remaining-count">0</span> more)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global state
+    let openaiSettings = {};
+    let openrouterSettings = {};
+    let generalSettings = {};
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSettings();
+    });
+
+    // Tab Management
+    function showTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Show selected tab
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+
+      // Load models if models tab is selected
+      if (tabName === 'models') {
+        loadModels();
+      }
+    }
+
+    // Provider Management
+    function toggleProvider(provider) {
+      const content = document.getElementById(provider + '-content');
+      const expand = document.getElementById(provider + '-expand');
+      
+      if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        expand.classList.remove('expanded');
+      } else {
+        content.classList.add('expanded');
+        expand.classList.add('expanded');
+      }
+    }
+
+    // Settings Management
+    function loadSettings() {
+      // Load general settings
+      google.script.run
+        .withSuccessHandler(function(settings) {
+          // Load general settings
+          generalSettings = {
+            systemPrompt: settings.systemPrompt || '',
+            maxTokens: settings.maxTokens || 150,
+            temperature: settings.temperature || 0.0,
+            cacheDuration: settings.cacheDuration || 21600,
+            apiKey: settings.apiKey || ''
+          };
+          
+          // Populate general settings UI
+          document.getElementById('system-prompt').value = generalSettings.systemPrompt;
+          document.getElementById('max-tokens').value = generalSettings.maxTokens;
+          document.getElementById('temperature').value = generalSettings.temperature;
+          document.getElementById('cache-duration').value = generalSettings.cacheDuration;
+          
+          // Load OpenAI settings (using the general API key)
+          openaiSettings = { 
+            apiKey: generalSettings.apiKey,
+            defaultModel: 'gpt-4o'
+          };
+          
+          // Populate OpenAI UI
+          if (openaiSettings.apiKey) {
+            document.getElementById('openai-api-key').value = openaiSettings.apiKey;
+            updateConnectionStatus('openai', true);
+          }
+          if (openaiSettings.defaultModel) {
+            document.getElementById('openai-model').value = openaiSettings.defaultModel;
+          }
+        })
+        .withFailureHandler(showError)
+        .getSettings();
+        
+      // Load OpenRouter settings separately
+      google.script.run
+        .withSuccessHandler(function(settings) {
+          openrouterSettings = settings;
+          
+          if (openrouterSettings.apiKey) {
+            document.getElementById('openrouter-api-key').value = openrouterSettings.apiKey;
+            updateConnectionStatus('openrouter', true);
+          }
+          if (openrouterSettings.defaultModel) {
+            document.getElementById('openrouter-model').value = openrouterSettings.defaultModel;
+          }
+        })
+        .withFailureHandler(showError)
+        .GET_OPENROUTER_SETTINGS();
+    }
+
+    function saveOpenAISettings() {
+      const apiKey = document.getElementById('openai-api-key').value;
+      const model = document.getElementById('openai-model').value;
+      
+      openaiSettings = { apiKey, defaultModel: model };
+      
+      // Also update the general settings API key (for backward compatibility)
+      const currentGeneral = {
+        systemPrompt: document.getElementById('system-prompt').value,
+        maxTokens: parseInt(document.getElementById('max-tokens').value) || 150,
+        temperature: parseFloat(document.getElementById('temperature').value) || 0.0,
+        cacheDuration: parseInt(document.getElementById('cache-duration').value) || 21600,
+        apiKey: apiKey
+      };
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          updateConnectionStatus('openai', !!apiKey);
+          showSuccess('OpenAI settings saved');
+        })
+        .withFailureHandler(showError)
+        .updateSettings(currentGeneral);
+    }
+
+    function saveOpenRouterSettings() {
+      const apiKey = document.getElementById('openrouter-api-key').value;
+      const model = document.getElementById('openrouter-model').value;
+      
+      openrouterSettings = { apiKey, defaultModel: model };
+      
+      google.script.run
+        .withSuccessHandler(function() {
+          updateConnectionStatus('openrouter', !!apiKey);
+          showSuccess('OpenRouter settings saved');
+        })
+        .withFailureHandler(showError)
+        .SAVE_OPENROUTER_SETTINGS(openrouterSettings);
+    }
+
+    function clearOpenAISettings() {
+      document.getElementById('openai-api-key').value = '';
+      document.getElementById('openai-model').value = 'gpt-4o';
+      updateConnectionStatus('openai', false);
+      saveOpenAISettings();
+    }
+
+    function clearOpenRouterSettings() {
+      document.getElementById('openrouter-api-key').value = '';
+      document.getElementById('openrouter-model').value = 'google/gemini-pro-1.5';
+      updateConnectionStatus('openrouter', false);
+      saveOpenRouterSettings();
+    }
+
+    // General Settings Management
+    function saveGeneralSettings() {
+      const systemPrompt = document.getElementById('system-prompt').value;
+      const maxTokens = parseInt(document.getElementById('max-tokens').value) || 150;
+      const temperature = parseFloat(document.getElementById('temperature').value) || 0.0;
+      const cacheDuration = parseInt(document.getElementById('cache-duration').value) || 21600;
+      const apiKey = document.getElementById('openai-api-key').value || '';
+      
+      generalSettings = { systemPrompt, maxTokens, temperature, cacheDuration, apiKey };
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          showSuccess('General settings saved successfully');
+        })
+        .withFailureHandler(showError)
+        .updateSettings(generalSettings);
+    }
+
+    function resetGeneralSettings() {
+      if (confirm('Reset all general settings to defaults? This cannot be undone.')) {
+        google.script.run
+          .withSuccessHandler(function(result) {
+            // Update UI with reset values
+            document.getElementById('system-prompt').value = result.systemPrompt || '';
+            document.getElementById('max-tokens').value = result.maxTokens || 150;
+            document.getElementById('temperature').value = result.temperature || 0.0;
+            document.getElementById('cache-duration').value = result.cacheDuration || 21600;
+            
+            generalSettings = result;
+            showSuccess('Settings reset to defaults');
+          })
+          .withFailureHandler(showError)
+          .resetSettings();
+      }
+    }
+
+    // Connection Testing
+    function testOpenAIConnection() {
+      const apiKey = document.getElementById('openai-api-key').value;
+      if (!apiKey) {
+        showError('Please enter an API key first');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showSuccess('OpenAI connection successful!');
+            updateConnectionStatus('openai', true);
+          } else {
+            showError('OpenAI connection failed: ' + result.error);
+            updateConnectionStatus('openai', false);
+          }
+        })
+        .withFailureHandler(showError)
+        .TEST_OPENAI_CONNECTION(apiKey);
+    }
+
+    function testOpenRouterConnection() {
+      const apiKey = document.getElementById('openrouter-api-key').value;
+      if (!apiKey) {
+        showError('Please enter an API key first');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showSuccess('OpenRouter connection successful!');
+            updateConnectionStatus('openrouter', true);
+          } else {
+            showError('OpenRouter connection failed: ' + result.error);
+            updateConnectionStatus('openrouter', false);
+          }
+        })
+        .withFailureHandler(showError)
+        .TEST_OPENROUTER_CONNECTION(apiKey);
+    }
+
+    // Models Loading
+    let allModels = [];
+    let filteredModels = [];
+    let currentProvider = 'all';
+    
+    function loadModels() {
+      const container = document.getElementById('models-container');
+      const loading = document.getElementById('models-loading');
+      
+      loading.style.display = 'block';
+      container.style.display = 'none';
+      
+      google.script.run
+        .withSuccessHandler(function(models) {
+          allModels = models;
+          filteredModels = models;
+          
+          loading.style.display = 'none';
+          container.style.display = 'block';
+          
+          renderModels();
+        })
+        .withFailureHandler(function(error) {
+          loading.style.display = 'none';
+          showError('Failed to load models: ' + error);
+        })
+        .GET_AVAILABLE_MODELS();
+    }
+
+    function renderModels() {
+      const topGrid = document.getElementById('top-models-grid');
+      const allGrid = document.getElementById('all-models-grid');
+      const remainingCount = document.getElementById('remaining-count');
+      const showMoreBtn = document.getElementById('show-more-btn');
+      
+      // Clear existing content
+      topGrid.innerHTML = '';
+      allGrid.innerHTML = '';
+      
+      // Filter models by current provider and search
+      let modelsToShow = filteredModels;
+      if (currentProvider !== 'all') {
+        modelsToShow = filteredModels.filter(model => model.provider === currentProvider);
+      }
+      
+      // Show top 25 models
+      const topModels = modelsToShow.slice(0, 25);
+      const remainingModels = modelsToShow.slice(25);
+      
+      // Render top models
+      topModels.forEach(model => {
+        topGrid.appendChild(createModelCard(model));
+      });
+      
+      // Render remaining models
+      remainingModels.forEach(model => {
+        allGrid.appendChild(createModelCard(model));
+      });
+      
+      // Update remaining count and show/hide button
+      remainingCount.textContent = remainingModels.length;
+      if (remainingModels.length > 0) {
+        showMoreBtn.style.display = 'block';
+      } else {
+        showMoreBtn.style.display = 'none';
+      }
+    }
+
+    function createModelCard(model) {
+      const item = document.createElement('div');
+      item.className = 'model-item';
+      item.dataset.provider = model.provider;
+      item.dataset.name = model.name.toLowerCase();
+      item.dataset.id = model.id?.toLowerCase() || '';
+      
+      const pricingText = model.pricing ? 
+        `$${(model.pricing.prompt * 1000).toFixed(3)}/$${(model.pricing.completion * 1000).toFixed(3)} per 1K tokens` : 
+        'Pricing not available';
+      
+      item.innerHTML = `
+        <div class="model-header">
+          <div>
+            <div class="model-name">${model.name}</div>
+            ${model.id ? `<div class="model-id">${model.id}</div>` : ''}
+          </div>
+          <div class="model-provider ${model.provider}">${model.provider}</div>
+        </div>
+        <div class="model-description">${model.description || 'No description available'}</div>
+        ${model.context_length ? `<div class="model-pricing">Context: ${model.context_length.toLocaleString()} tokens</div>` : ''}
+        <div class="model-pricing">${pricingText}</div>
+      `;
+      
+      return item;
+    }
+
+    function filterModels() {
+      const searchTerm = document.getElementById('model-search').value.toLowerCase();
+      
+      if (!searchTerm) {
+        filteredModels = allModels;
+      } else {
+        filteredModels = allModels.filter(model => 
+          model.name.toLowerCase().includes(searchTerm) ||
+          (model.id && model.id.toLowerCase().includes(searchTerm)) ||
+          model.provider.toLowerCase().includes(searchTerm) ||
+          (model.description && model.description.toLowerCase().includes(searchTerm))
+        );
+      }
+      
+      renderModels();
+    }
+
+    function filterByProvider(provider) {
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`[data-provider="${provider}"]`).classList.add('active');
+      
+      currentProvider = provider;
+      renderModels();
+    }
+
+    function toggleAllModels() {
+      const otherSection = document.getElementById('other-models-section');
+      const showMoreBtn = document.getElementById('show-more-btn');
+      
+      if (otherSection.style.display === 'none') {
+        otherSection.style.display = 'block';
+        showMoreBtn.textContent = 'Show Less';
+      } else {
+        otherSection.style.display = 'none';
+        showMoreBtn.innerHTML = `Show All Models (<span id="remaining-count">${document.getElementById('remaining-count').textContent}</span> more)`;
+      }
+    }
+
+    // UI Utilities
+    function updateConnectionStatus(provider, connected) {
+      const status = document.getElementById(provider + '-status');
+      const dot = status.querySelector('.status-dot');
+      const text = status.querySelector('span:last-child');
+      
+      if (connected) {
+        status.className = 'status-indicator status-connected';
+        text.textContent = 'Connected';
+      } else {
+        status.className = 'status-indicator status-disconnected';
+        text.textContent = 'Disconnected';
+      }
+    }
+
+    function showMessage(message, type) {
+      const existing = document.querySelector('.message');
+      if (existing) existing.remove();
+      
+      const div = document.createElement('div');
+      div.className = `message message-${type}`;
+      div.textContent = message;
+      
+      const content = document.querySelector('.content');
+      content.insertBefore(div, content.firstChild);
+      
+      setTimeout(() => div.remove(), 5000);
+    }
+
+    function showSuccess(message) {
+      showMessage(message, 'success');
+    }
+
+    function showError(message) {
+      showMessage(message, 'error');
+    }
+  </script>
+</body>
+</html>
