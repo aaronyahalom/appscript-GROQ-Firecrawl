@@ -524,8 +524,11 @@ const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 function GROQ(prompt, model = "groq/compound", temperature = 0.0, maxTokens = 1000) {
   try {
+    // Force shorter responses through prompt modification
+    const modifiedPrompt = `${prompt}\n\n[Keep response under 150 tokens, be concise]`;
+    
     const payload = {
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: "user", content: modifiedPrompt }],
       model: model,
       temperature: temperature,
       max_tokens: maxTokens
