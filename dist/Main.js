@@ -516,3 +516,36 @@ function OPENROUTER(prompt, model, temperature, maxTokens) {
     const defaultMaxTokens = ENSURE_NUMBER(maxTokens, PROPERTY_GET_NUMBER(properties, PROPERTY_KEY_MAX_TOKENS, DEFAULT_MAX_TOKENS));
     return REQUEST_COMPLETIONS_UNIFIED('openrouter', apiKey, systemPrompt, prompt, defaultModel, defaultMaxTokens, defaultTemp);
 }
+
+// GROQ API MVP - Add at line ~end of file
+const GROQ_API_KEY = "gsk_YOUR_API_KEY_HERE"; // Replace with your actual key
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+
+function GROQ(prompt, model = "groq/compound", temperature = 0.0, maxTokens = 1000) {
+  try {
+    const payload = {
+      messages: [{ role: "user", content: prompt }],
+      model: model,
+      temperature: temperature,
+      max_tokens: maxTokens
+    };
+    
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + GROQ_API_KEY
+      },
+      payload: JSON.stringify(payload)
+    };
+    
+    const response = UrlFetchApp.fetch(GROQ_API_URL, options);
+    const jsonResponse = JSON.parse(response.getContentText());
+    
+    return jsonResponse.choices[0].message.content;
+    
+  } catch (error) {
+    return "ERROR: " + error.toString();
+  }
+}
