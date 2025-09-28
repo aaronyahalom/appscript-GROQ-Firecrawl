@@ -83,6 +83,57 @@ To compose complex prompts by concatenating multiple cells, you can use the `&` 
 | Code generation | `=OPENROUTER(..., "deepseek/deepseek-chat")` | #3 ranked, excellent for coding |
 | Multilingual tasks | `=OPENROUTER(..., "qwen/qwen-2.5-72b-instruct")` | #4 ranked, great for languages |
 
+## GROQ Functions
+
+### Quick Start
+- `=GROQ("Your prompt")` - Uses groq/compound by default (web search enabled)
+- `=GROQ("Your prompt", "model", temperature, max_tokens)` - Full control
+
+### GROQ Models
+- `groq/compound` - **Web search + Wolfram Alpha** (250 requests/day, 70K tokens/min)
+- `groq/compound-mini` - **Fast web search** (250 requests/day, 70K tokens/min)  
+- `openai/gpt-oss-120b` - **Beast reasoning** (1K requests/day, 200K tokens/day)
+- `openai/gpt-oss-20b` - **Fast inference** (1K requests/day, 200K tokens/day)
+
+### GROQ Examples
+
+#### Web Search & Real-time Data
+```
+=GROQ("Current Tesla stock price", "groq/compound")
+=GROQ("Latest news about AI", "groq/compound-mini") 
+=GROQ("Weather in New York today", "groq/compound")
+```
+
+#### Complex Reasoning
+```
+=GROQ("Analyze quarterly sales data step-by-step", "openai/gpt-oss-120b")
+=GROQ("Solve this math: derivative of x^3 + 2x", "groq/compound")
+```
+
+#### Fast Processing
+```
+=GROQ("Translate to Spanish: " & A1, "openai/gpt-oss-20b")
+=GROQ("Summarize: " & A1:A10, "groq/compound-mini")
+```
+
+#### Advanced Usage
+```
+=GROQ("Creative writing task", "groq/compound", 0.8, 1000)
+=GROQ("Precise calculation", "openai/gpt-oss-120b", 0.0, 500)
+```
+
+### GROQ Setup
+1. Get API key: https://console.groq.com/keys
+2. Add GROQ code to your Main.js file
+3. Replace `gsk_YOUR_API_KEY_HERE` with your actual key
+
+**GROQ Features:**
+- ⚡ **Blazing fast inference** - Up to 350 tokens/sec
+- 🌐 **Web search** - Real-time internet access  
+- 🧮 **Wolfram Alpha** - Mathematical computations
+- 📊 **Rate limiting** - Automatic usage tracking
+- 🚀 **Free tier** - Generous daily limits
+
 ## File Structure
 
 The project is now organized into just **2 files** for easy Apps Script import:
